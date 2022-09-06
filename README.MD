@@ -4,7 +4,8 @@
 
 В данном проекте будет разработан чат с комнатами на Rest Api
 
-Стэк технологий:
+Стек технологий:
+Rest Api
 Spring Boot
 Spring Data
 Lombok
