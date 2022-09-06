@@ -23,16 +23,16 @@ public class PersonService {
         return personRepository.findAll();
     }
 
+    public Person findByUserName(String name) {
+        return personRepository.findPersonByName(name);
+    }
+
     public Optional<Person> findPersonById(int id) {
         return personRepository.findById(id);
     }
 
     public Person savePerson(Person person) {
-        Optional<Person> rsl = personRepository.findById(person.getId());
         person.setRole(roleRepository.findAllByName(USER));
-        if (rsl.isPresent()) {
-            return personRepository.save(person);
-        }
         return personRepository.save(person);
     }
 

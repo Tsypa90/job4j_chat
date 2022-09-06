@@ -15,6 +15,7 @@ public class Person {
     @EqualsAndHashCode.Include
     private int id;
     private String name;
+    private String password;
     @OneToOne
     private Role role;
 }
