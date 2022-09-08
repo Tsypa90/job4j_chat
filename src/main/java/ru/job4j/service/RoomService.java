@@ -10,6 +10,7 @@ import ru.job4j.repository.PersonRepository;
 import ru.job4j.repository.RoomRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -21,37 +22,38 @@ public class RoomService {
     @NonNull
     private final MessageRepository messageRepository;
 
+
     public List<Room> findAll() {
         return roomRepository.findAll();
     }
 
-    public Room findRoomById(int roomId) {
+    public Optional<Room> findRoomById(int roomId) {
         return roomRepository.findById(roomId);
     }
 
     public void postMessage(Message message, int roomId, int personId) {
-        Room room = roomRepository.findById(roomId);
+        Optional<Room> room = roomRepository.findById(roomId);
         message.setPerson(personRepository.findById(personId).get());
-        room.addMessage(message);
-        roomRepository.save(room);
+        room.get().addMessage(message);
+        roomRepository.save(room.get());
     }
 
     public void enterRoom(int roomId, int personId) {
-        Room room = roomRepository.findById(roomId);
-        room.addPerson(personRepository.findById(personId).get());
-        roomRepository.save(room);
+        Optional<Room> room = roomRepository.findById(roomId);
+        room.get().addPerson(personRepository.findById(personId).get());
+        roomRepository.save(room.get());
     }
 
     public void exitRoom(int roomId, int personId) {
-        Room room = roomRepository.findById(roomId);
-        room.deletePerson(personRepository.findById(personId).get());
-        roomRepository.save(room);
+        Optional<Room> room = roomRepository.findById(roomId);
+        room.get().deletePerson(personRepository.findById(personId).get());
+        roomRepository.save(room.get());
     }
 
     public void deleteMessage(int roomId, int messageId) {
-        Room room = roomRepository.findById(roomId);
-        room.deleteMessage(messageRepository.findAllById(messageId));
-        roomRepository.save(room);
+        Optional<Room> room = roomRepository.findById(roomId);
+        room.get().deleteMessage(messageRepository.findAllById(messageId));
+        roomRepository.save(room.get());
         messageRepository.deleteById(messageId);
     }
 }
