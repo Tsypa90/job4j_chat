@@ -4,6 +4,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.job4j.domain.Person;
+import ru.job4j.exception.PersonNameNotUniqueException;
 import ru.job4j.repository.PersonRepository;
 import ru.job4j.repository.RoleRepository;
 
@@ -31,12 +32,20 @@ public class PersonService {
         return personRepository.findById(id);
     }
 
-    public Person savePerson(Person person) {
+    public Person savePerson(Person person) throws PersonNameNotUniqueException {
+        var namePerson = personRepository.findPersonByName(person.getName());
+        if (namePerson != null) {
+            throw new PersonNameNotUniqueException("This name already exists");
+        }
         person.setRole(roleRepository.findAllByName(USER));
         return personRepository.save(person);
     }
 
-    public void deletePerson(int id) {
+    public void deletePerson(int id) throws IllegalArgumentException {
+        var person = personRepository.findById(id);
+        if (person.isEmpty()) {
+            throw new IllegalArgumentException("No found person with id:" + id);
+        }
         personRepository.deleteById(id);
     }
 }

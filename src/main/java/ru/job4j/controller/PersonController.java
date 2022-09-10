@@ -12,6 +12,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import ru.job4j.domain.Person;
+import ru.job4j.exception.GlobalExceptionHandler;
+import ru.job4j.exception.PersonNameNotUniqueException;
 import ru.job4j.service.PersonService;
 
 import javax.servlet.http.HttpServletResponse;
@@ -27,7 +29,9 @@ public class PersonController {
     private final PersonService service;
     @NonNull
     private final BCryptPasswordEncoder encoder;
-    private static final Logger LOGGER = LoggerFactory.getLogger(PersonController.class.getName());
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(GlobalExceptionHandler.class.getSimpleName());
+
     private final ObjectMapper objectMapper;
 
     @GetMapping("/")
@@ -36,7 +40,7 @@ public class PersonController {
     }
 
     @PostMapping("/sign-up")
-    public void signUp(@RequestBody Person person) {
+    public void signUp(@RequestBody Person person) throws PersonNameNotUniqueException {
         if (person.getPassword() == null || person.getName() == null) {
             throw new NullPointerException("Username and password mustn't be empty");
         }
@@ -56,7 +60,7 @@ public class PersonController {
     }
 
     @PutMapping("/")
-    public ResponseEntity<Void> updatePerson(@RequestBody Person person) {
+    public ResponseEntity<Void> updatePerson(@RequestBody Person person) throws PersonNameNotUniqueException {
         if (person.getPassword() == null || person.getName() == null) {
             throw new NullPointerException("Username and password mustn't be empty");
         }
@@ -68,23 +72,21 @@ public class PersonController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePerson(@PathVariable int id) {
-        try {
-            service.deletePerson(id);
-        } catch (EmptyResultDataAccessException e) {
-           throw new EmptyResultDataAccessException("Person not found with id " + id, e.getExpectedSize());
-        }
+    public ResponseEntity<Void> deletePerson(@PathVariable int id) throws IllegalArgumentException {
+        service.deletePerson(id);
         return ResponseEntity.ok().build();
     }
 
-    @ExceptionHandler(value = {IllegalArgumentException.class, EmptyResultDataAccessException.class})
+
+
+    @ExceptionHandler({PersonNameNotUniqueException.class})
     public void exceptionHandler(Exception e, HttpServletResponse res) throws IOException {
         res.setStatus(HttpStatus.BAD_REQUEST.value());
         res.setContentType("application/json");
         res.getWriter().write(objectMapper.writeValueAsString(new HashMap<>() { {
-            put("message", e.getMessage());
-            put("type", e.getClass());
+            put("message", "Some fields empty");
+            put("detail", e.getMessage());
         }}));
-        LOGGER.error(e.getLocalizedMessage());
+        LOGGER.error(e.getMessage());
     }
 }
