@@ -55,7 +55,7 @@ public class RoomController {
         } catch (NoSuchElementException e) {
             throw new NoSuchElementException("Id of room or person not found");
         }
-        return ResponseEntity.ok().build();
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PutMapping("/{roomId}/enter")
@@ -68,7 +68,7 @@ public class RoomController {
         } catch (NoSuchElementException e) {
             throw new NoSuchElementException("Id of room or person not found");
         }
-        return ResponseEntity.ok().build();
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PutMapping("/{roomId}/exit")
@@ -81,7 +81,7 @@ public class RoomController {
         } catch (NoSuchElementException e) {
             throw new NoSuchElementException("Id of room or person not found");
         }
-        return ResponseEntity.ok().build();
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @DeleteMapping("/{roomId}/message")
@@ -93,7 +93,7 @@ public class RoomController {
         } catch (EmptyResultDataAccessException e) {
             throw new EmptyResultDataAccessException("Id of message not found", e.getExpectedSize());
         }
-        return ResponseEntity.ok().build();
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @ExceptionHandler({IllegalArgumentException.class,
