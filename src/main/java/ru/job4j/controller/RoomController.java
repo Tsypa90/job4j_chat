@@ -11,6 +11,7 @@ import ru.job4j.domain.Message;
 import ru.job4j.domain.Room;
 import ru.job4j.service.RoomService;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -45,6 +46,16 @@ public class RoomController {
         service.postMessage(message, roomId, personId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
+
+    @PatchMapping("/message/")
+    public ResponseEntity<Void> patch(@RequestBody Message message) throws InvocationTargetException, IllegalAccessException {
+        if (message.getId() == 0) {
+            throw new IllegalArgumentException("Id cannot be empty");
+        }
+        service.patchMessage(message);
+        return ResponseEntity.ok().build();
+    }
+
 
     @PutMapping("/{roomId}/enter")
     public ResponseEntity<Void> enterRoom(@PathVariable int roomId, @RequestParam int personId) throws NoSuchElementException {

@@ -33,7 +33,7 @@ public class GlobalExceptionHandler {
         res.setStatus(HttpStatus.BAD_REQUEST.value());
         res.setContentType("application/json");
         res.getWriter().write(objectMapper.writeValueAsString(new HashMap<>() { {
-            put("message", "Some fields wrong or wrong");
+            put("message", "Some fields wrong");
             put("detail", e.getMessage());
         }}));
         LOGGER.error(e.getMessage());

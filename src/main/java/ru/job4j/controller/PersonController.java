@@ -5,7 +5,6 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -18,6 +17,7 @@ import ru.job4j.service.PersonService;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.List;
 
@@ -67,7 +67,19 @@ public class PersonController {
         if (person.getId() == 0) {
             throw new IllegalArgumentException("Id cannot be empty");
         }
+        person.setPassword(encoder.encode(person.getPassword()));
         service.savePerson(person);
+        return ResponseEntity.ok().build();
+    }
+
+    @PatchMapping("/")
+    public ResponseEntity<Void> patch(@RequestBody Person person) throws
+            InvocationTargetException, IllegalAccessException {
+        if (person.getId() == 0) {
+            throw new IllegalArgumentException("Id cannot be empty");
+        }
+        person.setPassword(encoder.encode(person.getPassword()));
+        service.patch(person);
         return ResponseEntity.ok().build();
     }
 
