@@ -2,7 +2,6 @@ package ru.job4j.controller;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,7 +12,6 @@ import ru.job4j.service.RoomService;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/room")
@@ -38,7 +36,7 @@ public class RoomController {
     @PutMapping("/{roomId}/message")
     public ResponseEntity<Void> postMessage(@RequestBody Message message,
                                             @PathVariable int roomId,
-                                            @RequestParam int personId) throws NoSuchElementException {
+                                            @RequestParam int personId) {
 
         if (message.getBody() == null) {
             throw new NullPointerException("Message mustn't be empty");
@@ -48,7 +46,8 @@ public class RoomController {
     }
 
     @PatchMapping("/message/")
-    public ResponseEntity<Void> patch(@RequestBody Message message) throws InvocationTargetException, IllegalAccessException {
+    public ResponseEntity<Void> patch(@RequestBody Message message) throws
+            InvocationTargetException, IllegalAccessException {
         if (message.getId() == 0) {
             throw new IllegalArgumentException("Id cannot be empty");
         }
@@ -58,7 +57,7 @@ public class RoomController {
 
 
     @PutMapping("/{roomId}/enter")
-    public ResponseEntity<Void> enterRoom(@PathVariable int roomId, @RequestParam int personId) throws NoSuchElementException {
+    public ResponseEntity<Void> enterRoom(@PathVariable int roomId, @RequestParam int personId) {
         if (personId == 0 || roomId == 0) {
             throw new IllegalArgumentException("id cannot be empty");
         }
@@ -67,7 +66,7 @@ public class RoomController {
     }
 
     @PutMapping("/{roomId}/exit")
-    public ResponseEntity<Void> exitRoom(@PathVariable int roomId, @RequestParam int personId) throws NoSuchElementException {
+    public ResponseEntity<Void> exitRoom(@PathVariable int roomId, @RequestParam int personId) {
         if (personId == 0 || roomId == 0) {
             throw new IllegalArgumentException("id cannot be empty");
         }
@@ -76,8 +75,10 @@ public class RoomController {
     }
 
     @DeleteMapping("/{roomId}/message")
-    public ResponseEntity<Void> deleteMessage(@PathVariable int roomId, @RequestParam int messageId)
-            throws NoSuchElementException, EmptyResultDataAccessException {
+    public ResponseEntity<Void> deleteMessage(@PathVariable int roomId, @RequestParam int messageId) {
+        if (messageId == 0 || roomId == 0) {
+            throw new IllegalArgumentException("id cannot be empty");
+        }
         service.deleteMessage(roomId, messageId);
         return new ResponseEntity<>(HttpStatus.OK);
     }

@@ -14,6 +14,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Service
@@ -76,11 +77,10 @@ public class PersonService {
         personRepository.save(current.get());
     }
 
-    public void deletePerson(int id) throws IllegalArgumentException {
-        var person = personRepository.findById(id);
-        if (person.isEmpty()) {
-            throw new IllegalArgumentException("No found person with id:" + id);
-        }
-        personRepository.deleteById(id);
+    public void deletePerson(int id) {
+        Person person = personRepository
+                .findById(id)
+                .orElseThrow(() -> new NoSuchElementException("No found person with id:" + id));
+        personRepository.deleteById(person.getId());
     }
 }

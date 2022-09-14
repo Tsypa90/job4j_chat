@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import ru.job4j.domain.Message;
+import ru.job4j.domain.Person;
 import ru.job4j.domain.Room;
 import ru.job4j.repository.MessageRepository;
 import ru.job4j.repository.PersonRepository;
@@ -15,6 +16,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Service
@@ -37,10 +39,11 @@ public class RoomService {
     }
 
     public void postMessage(Message message, int roomId, int personId) {
-        Optional<Room> room = roomRepository.findById(roomId);
-        message.setPerson(personRepository.findById(personId).get());
-        room.get().addMessage(message);
-        roomRepository.save(room.get());
+        Room room = findRoom(roomId);
+        Person person = findPerson(personId);
+        message.setPerson(person);
+        room.addMessage(message);
+        roomRepository.save(room);
     }
 
     public void patchMessage(Message message) throws InvocationTargetException, IllegalAccessException {
@@ -74,21 +77,40 @@ public class RoomService {
     }
 
     public void enterRoom(int roomId, int personId) {
-        Optional<Room> room = roomRepository.findById(roomId);
-        room.get().addPerson(personRepository.findById(personId).get());
-        roomRepository.save(room.get());
+        Room room = findRoom(roomId);
+        Person person = findPerson(personId);
+        room.addPerson(person);
+        roomRepository.save(room);
     }
 
     public void exitRoom(int roomId, int personId) {
-        Optional<Room> room = roomRepository.findById(roomId);
-        room.get().deletePerson(personRepository.findById(personId).get());
-        roomRepository.save(room.get());
+        Room room = findRoom(roomId);
+        Person person = findPerson(personId);
+        room.deletePerson(person);
+        roomRepository.save(room);
     }
 
     public void deleteMessage(int roomId, int messageId) {
-        Optional<Room> room = roomRepository.findById(roomId);
-        room.get().deleteMessage(messageRepository.findAllById(messageId));
-        roomRepository.save(room.get());
+        Room room = findRoom(roomId);
+        Message message = findMessage(messageId);
+        room.deleteMessage(message);
+        roomRepository.save(room);
         messageRepository.deleteById(messageId);
+    }
+
+    private Room findRoom(int id) {
+        return roomRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("No room with id:" + id));
+    }
+
+    private Message findMessage(int id) {
+        return messageRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("No message with id:" + id));
+    }
+
+    private Person findPerson(int id) {
+        return personRepository
+                .findById(id)
+                .orElseThrow(() -> new NoSuchElementException("No person with id:" + id));
     }
 }

@@ -24,16 +24,26 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler({
-            PersonNameNotUniqueException.class,
             IllegalArgumentException.class,
+            NullPointerException.class})
+    public void illAndNullExceptionHandler(Exception e, HttpServletResponse res) throws IOException {
+        exceptionHandler(e, res, "Some fields empty");
+        LOGGER.error(e.getMessage());
+    }
+
+    @ExceptionHandler({
             EmptyResultDataAccessException.class,
             NoSuchElementException.class,
-            NullPointerException.class})
-    public void exceptionHandler(Exception e, HttpServletResponse res) throws IOException {
+    })
+    public void noFindExceptionHandler(Exception e, HttpServletResponse res) throws IOException {
+       exceptionHandler(e, res, "Entity not find");
+    }
+
+    private void exceptionHandler(Exception e, HttpServletResponse res, String message) throws IOException {
         res.setStatus(HttpStatus.BAD_REQUEST.value());
         res.setContentType("application/json");
         res.getWriter().write(objectMapper.writeValueAsString(new HashMap<>() { {
-            put("message", "Some fields wrong");
+            put("message", message);
             put("detail", e.getMessage());
         }}));
         LOGGER.error(e.getMessage());
