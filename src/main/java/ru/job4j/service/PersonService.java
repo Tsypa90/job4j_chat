@@ -30,10 +30,6 @@ public class PersonService {
         return personRepository.findAll();
     }
 
-    public Person findByUserName(String name) {
-        return personRepository.findPersonByName(name);
-    }
-
     public Optional<Person> findPersonById(int id) {
         return personRepository.findById(id);
     }
@@ -41,13 +37,13 @@ public class PersonService {
     public Person savePerson(Person person) throws PersonNameNotUniqueException {
         var namePerson = personRepository.findPersonByName(person.getName());
         if (namePerson != null) {
-            throw new PersonNameNotUniqueException("This name already exists");
+            throw new PersonNameNotUniqueException(person.getName() + " this name already exists");
         }
         person.setRole(roleRepository.findAllByName(USER));
         return personRepository.save(person);
     }
 
-    public void patch(Person person) throws InvocationTargetException, IllegalAccessException {
+    public void patch(Person person) throws InvocationTargetException, IllegalAccessException, PersonNameNotUniqueException {
         var current = personRepository.findById(person.getId());
         if (current.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Person to update not found");
@@ -67,6 +63,16 @@ public class PersonService {
                 if (setMethod == null) {
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                             "Impossible invoke set method from object : " + current + ", Check set and get pairs.");
+                }
+                if (getMethod.getName().equals("getName")) {
+                    String newValue = (String) getMethod.invoke(person);
+                    if (newValue != null) {
+                        var personDb = personRepository.findPersonByName(newValue);
+                        if (personDb != null) {
+                            throw new PersonNameNotUniqueException(newValue + " this name already exists");
+                        }
+                        setMethod.invoke(current.get(), newValue);
+                    }
                 }
                 var newValue = getMethod.invoke(person);
                 if (newValue != null) {

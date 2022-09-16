@@ -34,19 +34,14 @@ public class PersonController {
 
     private final ObjectMapper objectMapper;
 
-    @GetMapping("/")
+    @GetMapping
     public List<Person> findAll() {
         return service.findAll();
     }
 
     @PostMapping("/sign-up")
     public void signUp(@RequestBody Person person) throws PersonNameNotUniqueException {
-        if (person.getPassword() == null || person.getName() == null) {
-            throw new NullPointerException("Username and password mustn't be empty");
-        }
-        if (person.getPassword().length() < 3) {
-            throw new IllegalArgumentException("Invalid password. Password length must be more then 3 chars");
-        }
+        checkPerson(person);
         person.setPassword(encoder.encode(person.getPassword()));
         service.savePerson(person);
     }
@@ -59,26 +54,29 @@ public class PersonController {
                 HttpStatus.OK);
     }
 
-    @PutMapping("/")
+    @PutMapping
     public ResponseEntity<Void> updatePerson(@RequestBody Person person) throws PersonNameNotUniqueException {
-        if (person.getPassword() == null || person.getName() == null) {
-            throw new NullPointerException("Username and password mustn't be empty");
-        }
         if (person.getId() == 0) {
             throw new IllegalArgumentException("Id cannot be empty");
         }
+        checkPerson(person);
         person.setPassword(encoder.encode(person.getPassword()));
         service.savePerson(person);
         return ResponseEntity.ok().build();
     }
 
-    @PatchMapping("/")
+    @PatchMapping
     public ResponseEntity<Void> patch(@RequestBody Person person) throws
-            InvocationTargetException, IllegalAccessException {
+            InvocationTargetException, IllegalAccessException, PersonNameNotUniqueException {
         if (person.getId() == 0) {
             throw new IllegalArgumentException("Id cannot be empty");
         }
-        person.setPassword(encoder.encode(person.getPassword()));
+        if (person.getPassword() != null) {
+            if (person.getPassword().length() <= 3) {
+                throw new IllegalArgumentException("Invalid password. Password length must be more then 3 chars");
+            }
+            person.setPassword(encoder.encode(person.getPassword()));
+        }
         service.patch(person);
         return ResponseEntity.ok().build();
     }
@@ -89,16 +87,23 @@ public class PersonController {
         return ResponseEntity.ok().build();
     }
 
-
-
     @ExceptionHandler({PersonNameNotUniqueException.class})
     public void exceptionHandler(Exception e, HttpServletResponse res) throws IOException {
         res.setStatus(HttpStatus.BAD_REQUEST.value());
         res.setContentType("application/json");
         res.getWriter().write(objectMapper.writeValueAsString(new HashMap<>() { {
-            put("message", "Some fields empty");
+            put("message", "person name not unique");
             put("detail", e.getMessage());
         }}));
         LOGGER.error(e.getMessage());
+    }
+
+    private void checkPerson(Person person) {
+        if (person.getPassword() == null || person.getName() == null) {
+            throw new NullPointerException("Username and password mustn't be empty");
+        }
+        if (person.getPassword().length() < 3) {
+            throw new IllegalArgumentException("Invalid password. Password length must be more then 3 chars");
+        }
     }
 }

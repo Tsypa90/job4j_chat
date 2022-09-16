@@ -15,6 +15,6 @@ public class Message {
     @EqualsAndHashCode.Include
     private int id;
     private String body;
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     private Person person;
 }

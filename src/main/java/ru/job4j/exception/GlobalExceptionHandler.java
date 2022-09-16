@@ -27,7 +27,7 @@ public class GlobalExceptionHandler {
             IllegalArgumentException.class,
             NullPointerException.class})
     public void illAndNullExceptionHandler(Exception e, HttpServletResponse res) throws IOException {
-        exceptionHandler(e, res, "Some fields empty");
+        exceptionHandler(e, res, "Some fields wrong or empty");
         LOGGER.error(e.getMessage());
     }
 

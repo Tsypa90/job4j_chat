@@ -19,7 +19,7 @@ public class Room {
     private String name;
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<Person> persons;
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinTable(name = "room_messages", joinColumns = @JoinColumn(name = "room_id"), inverseJoinColumns = @JoinColumn(name = "messages_id"))
     private List<Message> messages;
 
