@@ -5,13 +5,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.ConstraintViolationException;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -23,11 +28,21 @@ public class GlobalExceptionHandler {
         this.objectMapper = objectMapper;
     }
 
-    @ExceptionHandler({
-            IllegalArgumentException.class,
-            NullPointerException.class})
+    @ExceptionHandler({MethodArgumentNotValidException.class})
+    public ResponseEntity<?> handle(MethodArgumentNotValidException e) {
+        return ResponseEntity.badRequest().body(
+                e.getFieldErrors().stream()
+                        .map(f -> Map.of(
+                                f.getField(),
+                                String.format("%s. Actual value: %s", f.getDefaultMessage(), f.getRejectedValue())
+                        ))
+                        .collect(Collectors.toList())
+        );
+    }
+
+    @ExceptionHandler({ConstraintViolationException.class})
     public void illAndNullExceptionHandler(Exception e, HttpServletResponse res) throws IOException {
-        exceptionHandler(e, res, "Some fields wrong or empty");
+        exceptionHandler(e, res, "Field Id is wrong");
         LOGGER.error(e.getMessage());
     }
 

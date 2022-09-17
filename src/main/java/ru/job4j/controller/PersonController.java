@@ -8,14 +8,17 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+import ru.job4j.Operation;
 import ru.job4j.domain.Person;
 import ru.job4j.exception.GlobalExceptionHandler;
 import ru.job4j.exception.PersonNameNotUniqueException;
 import ru.job4j.service.PersonService;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.constraints.Positive;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
@@ -24,6 +27,7 @@ import java.util.List;
 @RestController
 @RequestMapping("person")
 @RequiredArgsConstructor
+@Validated
 public class PersonController {
     @NonNull
     private final PersonService service;
@@ -40,14 +44,14 @@ public class PersonController {
     }
 
     @PostMapping("/sign-up")
-    public void signUp(@RequestBody Person person) throws PersonNameNotUniqueException {
-        checkPerson(person);
+    public void signUp(@Validated(Operation.OnCreate.class) @RequestBody Person person) throws
+            PersonNameNotUniqueException {
         person.setPassword(encoder.encode(person.getPassword()));
         service.savePerson(person);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Person> findDyId(@PathVariable int id) {
+    public ResponseEntity<Person> findDyId(@PathVariable @Positive(message = "Id is not positive") int id) {
         var person = service.findPersonById(id);
         return new ResponseEntity<>(
                 person.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Person not found")),
@@ -55,26 +59,17 @@ public class PersonController {
     }
 
     @PutMapping
-    public ResponseEntity<Void> updatePerson(@RequestBody Person person) throws PersonNameNotUniqueException {
-        if (person.getId() == 0) {
-            throw new IllegalArgumentException("Id cannot be empty");
-        }
-        checkPerson(person);
+    public ResponseEntity<Void> updatePerson(@Validated(Operation.OnUpdate.class) @RequestBody Person person) throws
+            PersonNameNotUniqueException {
         person.setPassword(encoder.encode(person.getPassword()));
         service.savePerson(person);
         return ResponseEntity.ok().build();
     }
 
     @PatchMapping
-    public ResponseEntity<Void> patch(@RequestBody Person person) throws
-            InvocationTargetException, IllegalAccessException, PersonNameNotUniqueException {
-        if (person.getId() == 0) {
-            throw new IllegalArgumentException("Id cannot be empty");
-        }
+    public ResponseEntity<Void> patch(@Validated(Operation.OnPatch.class) @RequestBody Person person) throws
+            PersonNameNotUniqueException, InvocationTargetException, IllegalAccessException {
         if (person.getPassword() != null) {
-            if (person.getPassword().length() <= 3) {
-                throw new IllegalArgumentException("Invalid password. Password length must be more then 3 chars");
-            }
             person.setPassword(encoder.encode(person.getPassword()));
         }
         service.patch(person);
@@ -82,7 +77,7 @@ public class PersonController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePerson(@PathVariable int id) throws IllegalArgumentException {
+    public ResponseEntity<Void> deletePerson(@PathVariable @Positive(message = "Id is not positive") int id) {
         service.deletePerson(id);
         return ResponseEntity.ok().build();
     }
@@ -96,14 +91,5 @@ public class PersonController {
             put("detail", e.getMessage());
         }}));
         LOGGER.error(e.getMessage());
-    }
-
-    private void checkPerson(Person person) {
-        if (person.getPassword() == null || person.getName() == null) {
-            throw new NullPointerException("Username and password mustn't be empty");
-        }
-        if (person.getPassword().length() < 3) {
-            throw new IllegalArgumentException("Invalid password. Password length must be more then 3 chars");
-        }
     }
 }
