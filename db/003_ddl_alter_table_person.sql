@@ -1,1 +1,0 @@
-alter table person add column password varchar(255);

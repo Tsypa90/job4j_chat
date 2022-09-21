@@ -1,17 +1,18 @@
 create table role (
     id serial primary key,
-    name varchar(250)
+    name text
 );
 
 create table person (
     id  serial primary key,
-    name varchar(250),
+    name text,
+    password text,
     role_id integer references role(id)
 );
 
 create table room (
     id serial primary key,
-    name varchar(250)
+    name text
 );
 
 create table message (

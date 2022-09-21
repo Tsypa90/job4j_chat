@@ -11,7 +11,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
-import ru.job4j.Operation;
+import ru.job4j.validation.OperationOnValidation;
 import ru.job4j.domain.Person;
 import ru.job4j.exception.GlobalExceptionHandler;
 import ru.job4j.exception.PersonNameNotUniqueException;
@@ -44,7 +44,7 @@ public class PersonController {
     }
 
     @PostMapping("/sign-up")
-    public void signUp(@Validated(Operation.OnCreate.class) @RequestBody Person person) throws
+    public void signUp(@Validated(OperationOnValidation.OnCreate.class) @RequestBody Person person) throws
             PersonNameNotUniqueException {
         person.setPassword(encoder.encode(person.getPassword()));
         service.savePerson(person);
@@ -59,7 +59,7 @@ public class PersonController {
     }
 
     @PutMapping
-    public ResponseEntity<Void> updatePerson(@Validated(Operation.OnUpdate.class) @RequestBody Person person) throws
+    public ResponseEntity<Void> updatePerson(@Validated(OperationOnValidation.OnUpdate.class) @RequestBody Person person) throws
             PersonNameNotUniqueException {
         person.setPassword(encoder.encode(person.getPassword()));
         service.savePerson(person);
@@ -67,7 +67,7 @@ public class PersonController {
     }
 
     @PatchMapping
-    public ResponseEntity<Void> patch(@Validated(Operation.OnPatch.class) @RequestBody Person person) throws
+    public ResponseEntity<Void> patch(@Validated(OperationOnValidation.OnPatch.class) @RequestBody Person person) throws
             PersonNameNotUniqueException, InvocationTargetException, IllegalAccessException {
         if (person.getPassword() != null) {
             person.setPassword(encoder.encode(person.getPassword()));
